@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from qtpy import QtCore
 import csv
+from scipy.integrate import simps  # Import Simpson's rule for numerical integration
 
 class ui_main_window(object):
     def setup_ui(self, MainWindow):
@@ -234,70 +235,113 @@ class ui_main_window(object):
         self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.open_csv(MainWindow)
+        self.compute_max_amplitude()
+        self.compute_total_muscle_activity()
+        # self.show_graphs(self, MainWindow)
 
     def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.a1_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
-        self.tma1_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
-        self.a3_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
-        self.tma3_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
+        self.a1_label.setText(_translate("MainWindow", "Max Amplitude :"))
+        self.tma1_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
+        self.a3_label.setText(_translate("MainWindow", "Max Amplitude :"))
+        self.tma3_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
         self.muscle_h1.setText(_translate("MainWindow", "Muscle #1"))
-        self.a2_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
-        self.tma2_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
+        self.a2_label.setText(_translate("MainWindow", "Max Amplitude :"))
+        self.tma2_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
         self.muscle_h2.setText(_translate("MainWindow", "Muscle #2"))
         self.muscle_h3.setText(_translate("MainWindow", "Muscle #3"))
-        self.a4_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
-        self.tma4_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
+        self.a4_label.setText(_translate("MainWindow", "Max Amplitude :"))
+        self.tma4_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
         self.screen_title.setText(_translate("MainWindow", "StabiliKnee EMG Reading"))
         self.muscle_h4.setText(_translate("MainWindow", "Muscle #4"))
 
-    # Opens csv file to be read
-    def open_csv(self, MainWindow):
-        with open('arduino_data.csv', mode='r') as file:
-            csvFile = csv.reader(file)
-            self.compute_max_amplitude(csvFile, MainWindow)
-            #self.compute_total_muscle_activity(self, MainWindow)
-            #self.show_graphs(self, MainWindow)
-
 
     # Computes amplitudes for each muscle
-    def compute_max_amplitude(self, csvFile, MainWindow):
-        headers = next(csvFile)  # Skip the first row (headers)
-        print(headers)
+    def compute_max_amplitude(self):
+        with open('arduino_data.csv', mode='r') as file:
+            csvFile = csv.reader(file)
+            next(csvFile)  # Skip the first row (headers)
 
-        # Adjust based on your data; use 1-based indexing for columns starting from "1"
-        columns = [1, 2, 3, 4]
-        max_values = {col: float('-inf') for col in columns}  # Initialize max values to -inf
+            # Adjust based on your data; use 1-based indexing for columns starting from "1"
+            columns = [1, 2, 3, 4]
+            max_values = {col: float('-inf') for col in columns}  # Initialize max values to -inf
 
-        try:
+            try:
+                for row in csvFile:
+                    for col in columns:
+                        try:
+                            # Convert value to float and update max if valid
+                            value = float(row[col])
+                            max_values[col] = max(max_values[col], value)
+                        except (ValueError, IndexError):
+                            pass  # Skip invalid or missing values
+            except FileNotFoundError:
+                print("Error: File not found")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+            # Replace -inf with 0 for columns with no valid data
+            for col in columns:
+                if max_values[col] == float('-inf'):
+                    max_values[col] = 0
+
+            # Assign values to labels; adjust indexing as needed
+            self.a1.setText(f"{max_values[1]:.2f} mV")
+            self.a2.setText(f"{max_values[2]:.2f} mV")
+            self.a3.setText(f"{max_values[3]:.2f} mV")
+            self.a4.setText(f"{max_values[4]:.2f} mV")
+
+            # Sets the font size
+            self.a1.setStyleSheet("font-size: 20px;")
+            self.a2.setStyleSheet("font-size: 20px;")
+            self.a3.setStyleSheet("font-size: 20px;")
+            self.a4.setStyleSheet("font-size: 20px;")
+
+
+    def compute_total_muscle_activity(self):
+        """
+    Calculates the integral of columns 1, 2, 3, and 4 over time (column 0).
+    If a column is missing, its value will be treated as 0.
+    """
+        with open('arduino_data.csv', mode='r') as file:
+            csvFile = csv.reader(file)
+            next(csvFile)  # Skip the first row (headers)
+
+            # Initialize lists to hold time and column data
+            time = []
+            columns = {1: [], 2: [], 3: [], 4: []}  # Store values for columns 1 to 4
+
             for row in csvFile:
-                for col in columns:
-                    try:
-                        # Convert value to float and update max if valid
-                        value = float(row[col])
-                        max_values[col] = max(max_values[col], value)
-                    except (ValueError, IndexError):
-                        pass  # Skip invalid or missing values
-        except FileNotFoundError:
-            print("Error: File not found")
-        except Exception as e:
-            print(f"An error occurred: {e}")
+                # Convert the row to floats where possible, fill missing columns with 0
+                row = [float(value) if value else 0.0 for value in row]
 
-        # Replace -inf with 0 for columns with no valid data
-        for col in columns:
-            if max_values[col] == float('-inf'):
-                max_values[col] = 0
+                # Ensure the row has enough columns to check (fill missing columns with 0)
+                while len(row) < 5:
+                    row.append(0.0)
 
-        # Assign values to labels; adjust indexing as needed
-        self.a1.setText(f"{max_values[1]:.2f} mV")
-        self.a2.setText(f"{max_values[2]:.2f} mV")
-        self.a3.setText(f"{max_values[3]:.2f} mV")
-        self.a4.setText(f"{max_values[4]:.2f} mV")
+                # Extract the time value
+                time.append(row[0])
 
-        # Sets the font size
-        self.a1.setStyleSheet("font-size: 20px;")
-        self.a2.setStyleSheet("font-size: 20px;")
-        self.a3.setStyleSheet("font-size: 20px;")
-        self.a4.setStyleSheet("font-size: 20px;")
+                # Append values to corresponding columns, default to 0 if column is missing
+                for col in range(1, 5):
+                    columns[col].append(row[col] if col < len(row) else 0.0)
+
+            # Calculate the integral for each column using the time data
+            integrals = {}
+            for col, values in columns.items():
+                if len(time) == len(values):  # Ensure the lengths match
+                    integrals[col] = simps(values, time)  # Use Simpson's rule for numerical integration
+                else:
+                    integrals[col] = 0.0  # Default to 0 if data is invalid
+
+            self.tma1.setText(f"{integrals[1]:.2f} mV")
+            self.tma2.setText(f"{integrals[2]:.2f} mV")
+            self.tma3.setText(f"{integrals[3]:.2f} mV")
+            self.tma4.setText(f"{integrals[4]:.2f} mV")
+
+            # Sets the font size
+            self.tma1.setStyleSheet("font-size: 20px;")
+            self.tma2.setStyleSheet("font-size: 20px;")
+            self.tma3.setStyleSheet("font-size: 20px;")
+            self.tma4.setStyleSheet("font-size: 20px;")
