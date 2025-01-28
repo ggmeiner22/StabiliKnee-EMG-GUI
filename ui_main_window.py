@@ -9,35 +9,40 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 from qtpy import QtCore
+import csv
 
-class UIMainWindow(object):
+class ui_main_window(object):
     def setup_ui(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
+        # Declares window size
         MainWindow.resize(1113, 851)
+
+        # Creates central Widget
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayoutWidget_3 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(90, 110, 251, 110))
-        self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
-        self.vtag_9 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
-        self.vtag_9.setContentsMargins(0, 0, 0, 0)
-        self.vtag_9.setObjectName("vtag_9")
-        self.a1_label = QtWidgets.QLabel(self.verticalLayoutWidget_3)
+
+        # Creates a vertical layout
+        self.verticalLayoutWidget_1 = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget_1.setGeometry(QtCore.QRect(90, 110, 251, 110))
+
+        self.vtag_1 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_1)
+        self.vtag_1.setContentsMargins(0, 0, 0, 0)
+
+        self.a1_label = QtWidgets.QLabel(self.verticalLayoutWidget_1)
+
+        # Sets font
         font = QtGui.QFont()
         font.setPointSize(12)
         self.a1_label.setFont(font)
-        self.a1_label.setObjectName("a1_label")
-        self.vtag_9.addWidget(self.a1_label)
-        self.tma1_label = QtWidgets.QLabel(self.verticalLayoutWidget_3)
+
+        self.vtag_1.addWidget(self.a1_label)
+        self.tma1_label = QtWidgets.QLabel(self.verticalLayoutWidget_1)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.tma1_label.setFont(font)
         self.tma1_label.setObjectName("tma1_label")
-        self.vtag_9.addWidget(self.tma1_label)
+        self.vtag_1.addWidget(self.tma1_label)
+
+
         self.verticalLayoutWidget_7 = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget_7.setGeometry(QtCore.QRect(90, 500, 251, 81))
         self.verticalLayoutWidget_7.setObjectName("verticalLayoutWidget_7")
@@ -226,23 +231,73 @@ class UIMainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
+        self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindow):
+        self.open_csv(MainWindow)
+
+    def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.a1_label.setText(_translate("MainWindow", "Amplitude (mV)"))
+        self.a1_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
         self.tma1_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
-        self.a3_label.setText(_translate("MainWindow", "Amplitude (mV)"))
+        self.a3_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
         self.tma3_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
         self.muscle_h1.setText(_translate("MainWindow", "Muscle #1"))
-        self.a2_label.setText(_translate("MainWindow", "Amplitude (mV)"))
+        self.a2_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
         self.tma2_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
         self.muscle_h2.setText(_translate("MainWindow", "Muscle #2"))
         self.muscle_h3.setText(_translate("MainWindow", "Muscle #3"))
-        self.a4_label.setText(_translate("MainWindow", "Amplitude (mV)"))
+        self.a4_label.setText(_translate("MainWindow", "Max Amplitude (mV)"))
         self.tma4_label.setText(_translate("MainWindow", "Total Muscle Activity (mV)"))
         self.screen_title.setText(_translate("MainWindow", "StabiliKnee EMG Reading"))
         self.muscle_h4.setText(_translate("MainWindow", "Muscle #4"))
 
+    # Opens csv file to be read
+    def open_csv(self, MainWindow):
+        with open('arduino_data.csv', mode='r') as file:
+            csvFile = csv.reader(file)
+            self.compute_max_amplitude(csvFile, MainWindow)
+            #self.compute_total_muscle_activity(self, MainWindow)
+            #self.show_graphs(self, MainWindow)
+
+
+    # Computes amplitudes for each muscle
+    def compute_max_amplitude(self, csvFile, MainWindow):
+        headers = next(csvFile)  # Skip the first row (headers)
+        print(headers)
+
+        # Adjust based on your data; use 1-based indexing for columns starting from "1"
+        columns = [1, 2, 3, 4]
+        max_values = {col: float('-inf') for col in columns}  # Initialize max values to -inf
+
+        try:
+            for row in csvFile:
+                for col in columns:
+                    try:
+                        # Convert value to float and update max if valid
+                        value = float(row[col])
+                        max_values[col] = max(max_values[col], value)
+                    except (ValueError, IndexError):
+                        pass  # Skip invalid or missing values
+        except FileNotFoundError:
+            print("Error: File not found")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        # Replace -inf with 0 for columns with no valid data
+        for col in columns:
+            if max_values[col] == float('-inf'):
+                max_values[col] = 0
+
+        # Assign values to labels; adjust indexing as needed
+        self.a1.setText(f"{max_values[1]:.2f} mV")
+        self.a2.setText(f"{max_values[2]:.2f} mV")
+        self.a3.setText(f"{max_values[3]:.2f} mV")
+        self.a4.setText(f"{max_values[4]:.2f} mV")
+
+        # Sets the font size
+        self.a1.setStyleSheet("font-size: 20px;")
+        self.a2.setStyleSheet("font-size: 20px;")
+        self.a3.setStyleSheet("font-size: 20px;")
+        self.a4.setStyleSheet("font-size: 20px;")
