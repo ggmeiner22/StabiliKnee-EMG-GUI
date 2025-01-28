@@ -9,32 +9,87 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QPixmap, QImage
 from qtpy import QtCore
 import csv
-from scipy.integrate import simps  # Import Simpson's rule for numerical integration
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from io import BytesIO
+from PIL import Image
+import numpy as np
 
 class ui_main_window(object):
     def setup_ui(self, MainWindow):
         # Declares window size
-        MainWindow.resize(1113, 851)
+        MainWindow.resize(1800, 950)
 
         # Creates central Widget
         self.centralwidget = QtWidgets.QWidget(MainWindow)
 
-        # Creates a vertical layout
-        self.verticalLayoutWidget_1 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_1.setGeometry(QtCore.QRect(90, 110, 251, 110))
+        # Screen Title
+        self.screen_title = QtWidgets.QLabel(self.centralwidget)
+        self.screen_title.setGeometry(QtCore.QRect(715, 40, 361, 42))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.screen_title.sizePolicy().hasHeightForWidth())
+        self.screen_title.setSizePolicy(sizePolicy)
+        self.screen_title.setBaseSize(QtCore.QSize(7, 0))
+        font = QtGui.QFont()
+        font.setPointSize(18)
+        self.screen_title.setFont(font)
+        self.screen_title.setObjectName("screen_title")
 
+        # Line
+        self.line = QtWidgets.QFrame(self.centralwidget)
+        self.line.setGeometry(QtCore.QRect(70, 70, 1660, 20))
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+
+        # Header 1
+        self.muscle_h1 = QtWidgets.QLabel(self.centralwidget)
+        self.muscle_h1.setGeometry(QtCore.QRect(100, 115, 125, 30))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.muscle_h1.setFont(font)
+        self.muscle_h1.setObjectName("muscle_h1")
+
+        # Header 2
+        self.muscle_h2 = QtWidgets.QLabel(self.centralwidget)
+        self.muscle_h2.setGeometry(QtCore.QRect(950, 115, 125, 30))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.muscle_h2.setFont(font)
+        self.muscle_h2.setObjectName("muscle_h2")
+
+        # Header 3
+        self.muscle_h3 = QtWidgets.QLabel(self.centralwidget)
+        self.muscle_h3.setGeometry(QtCore.QRect(100, 542, 125, 30))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.muscle_h3.setFont(font)
+        self.muscle_h3.setObjectName("muscle_h3")
+
+        # Header 4
+        self.muscle_h4 = QtWidgets.QLabel(self.centralwidget)
+        self.muscle_h4.setGeometry(QtCore.QRect(950, 542, 125, 30))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.muscle_h4.setFont(font)
+        self.muscle_h4.setObjectName("muscle_h4")
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        # Layout for label 1
+        self.verticalLayoutWidget_1 = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget_1.setGeometry(QtCore.QRect(300, 70, 251, 110))
         self.vtag_1 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_1)
         self.vtag_1.setContentsMargins(0, 0, 0, 0)
-
         self.a1_label = QtWidgets.QLabel(self.verticalLayoutWidget_1)
-
         # Sets font
         font = QtGui.QFont()
         font.setPointSize(12)
         self.a1_label.setFont(font)
-
         self.vtag_1.addWidget(self.a1_label)
         self.tma1_label = QtWidgets.QLabel(self.verticalLayoutWidget_1)
         font = QtGui.QFont()
@@ -43,54 +98,9 @@ class ui_main_window(object):
         self.tma1_label.setObjectName("tma1_label")
         self.vtag_1.addWidget(self.tma1_label)
 
-
-        self.verticalLayoutWidget_7 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_7.setGeometry(QtCore.QRect(90, 500, 251, 81))
-        self.verticalLayoutWidget_7.setObjectName("verticalLayoutWidget_7")
-        self.vtag_10 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_7)
-        self.vtag_10.setContentsMargins(0, 0, 0, 0)
-        self.vtag_10.setObjectName("vtag_10")
-        self.a3_label = QtWidgets.QLabel(self.verticalLayoutWidget_7)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.a3_label.setFont(font)
-        self.a3_label.setObjectName("a3_label")
-        self.vtag_10.addWidget(self.a3_label)
-        self.tma3_label = QtWidgets.QLabel(self.verticalLayoutWidget_7)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.tma3_label.setFont(font)
-        self.tma3_label.setObjectName("tma3_label")
-        self.vtag_10.addWidget(self.tma3_label)
-        self.verticalLayoutWidget_6 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(880, 110, 121, 111))
-        self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
-        self.vdata2_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_6)
-        self.vdata2_3.setContentsMargins(0, 0, 0, 0)
-        self.vdata2_3.setObjectName("vdata2_3")
-        self.a2 = QtWidgets.QLabel(self.verticalLayoutWidget_6)
-        self.a2.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.a2.setText("")
-        self.a2.setObjectName("a2")
-        self.vdata2_3.addWidget(self.a2)
-        self.tma2 = QtWidgets.QLabel(self.verticalLayoutWidget_6)
-        self.tma2.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.tma2.setText("")
-        self.tma2.setObjectName("tma2")
-        self.vdata2_3.addWidget(self.tma2)
-        self.graph_1 = QtWidgets.QLabel(self.centralwidget)
-        self.graph_1.setGeometry(QtCore.QRect(90, 220, 371, 201))
-        self.graph_1.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.graph_1.setText("")
-        self.graph_1.setObjectName("graph_1")
-        self.muscle_h1 = QtWidgets.QLabel(self.centralwidget)
-        self.muscle_h1.setGeometry(QtCore.QRect(230, 90, 101, 16))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.muscle_h1.setFont(font)
-        self.muscle_h1.setObjectName("muscle_h1")
+        # Layout for box 1
         self.verticalLayoutWidget_5 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(340, 110, 121, 111))
+        self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(500, 70, 121, 111))
         self.verticalLayoutWidget_5.setObjectName("verticalLayoutWidget_5")
         self.vdata_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_5)
         self.vdata_3.setContentsMargins(0, 0, 0, 0)
@@ -105,18 +115,10 @@ class ui_main_window(object):
         self.tma1.setText("")
         self.tma1.setObjectName("tma1")
         self.vdata_3.addWidget(self.tma1)
-        self.graph_3 = QtWidgets.QLabel(self.centralwidget)
-        self.graph_3.setGeometry(QtCore.QRect(90, 580, 371, 201))
-        self.graph_3.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.graph_3.setText("")
-        self.graph_3.setObjectName("graph_3")
-        self.graph_2 = QtWidgets.QLabel(self.centralwidget)
-        self.graph_2.setGeometry(QtCore.QRect(640, 220, 361, 201))
-        self.graph_2.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.graph_2.setText("")
-        self.graph_2.setObjectName("graph_2")
+
+        # Layout for label 2
         self.verticalLayoutWidget_4 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_4.setGeometry(QtCore.QRect(640, 110, 241, 111))
+        self.verticalLayoutWidget_4.setGeometry(QtCore.QRect(1150, 70, 241, 111))
         self.verticalLayoutWidget_4.setObjectName("verticalLayoutWidget_4")
         self.vtag_11 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_4)
         self.vtag_11.setContentsMargins(0, 0, 0, 0)
@@ -133,20 +135,48 @@ class ui_main_window(object):
         self.tma2_label.setFont(font)
         self.tma2_label.setObjectName("tma2_label")
         self.vtag_11.addWidget(self.tma2_label)
-        self.muscle_h2 = QtWidgets.QLabel(self.centralwidget)
-        self.muscle_h2.setGeometry(QtCore.QRect(760, 90, 101, 16))
+
+        # Layout for box 2
+        self.verticalLayoutWidget_6 = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(1350, 70, 121, 111))
+        self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
+        self.vdata2_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_6)
+        self.vdata2_3.setContentsMargins(0, 0, 0, 0)
+        self.vdata2_3.setObjectName("vdata2_3")
+        self.a2 = QtWidgets.QLabel(self.verticalLayoutWidget_6)
+        self.a2.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.a2.setText("")
+        self.a2.setObjectName("a2")
+        self.vdata2_3.addWidget(self.a2)
+        self.tma2 = QtWidgets.QLabel(self.verticalLayoutWidget_6)
+        self.tma2.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.tma2.setText("")
+        self.tma2.setObjectName("tma2")
+        self.vdata2_3.addWidget(self.tma2)
+
+        # Layout for label 3
+        self.verticalLayoutWidget_3 = QtWidgets.QWidget(self.centralwidget)
+        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(300, 515, 251, 81))
+        self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_7")
+        self.vtag_10 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
+        self.vtag_10.setContentsMargins(0, 0, 0, 0)
+        self.vtag_10.setObjectName("vtag_10")
+        self.a3_label = QtWidgets.QLabel(self.verticalLayoutWidget_3)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.muscle_h2.setFont(font)
-        self.muscle_h2.setObjectName("muscle_h2")
-        self.muscle_h3 = QtWidgets.QLabel(self.centralwidget)
-        self.muscle_h3.setGeometry(QtCore.QRect(230, 480, 101, 16))
+        self.a3_label.setFont(font)
+        self.a3_label.setObjectName("a3_label")
+        self.vtag_10.addWidget(self.a3_label)
+        self.tma3_label = QtWidgets.QLabel(self.verticalLayoutWidget_3)
         font = QtGui.QFont()
         font.setPointSize(12)
-        self.muscle_h3.setFont(font)
-        self.muscle_h3.setObjectName("muscle_h3")
+        self.tma3_label.setFont(font)
+        self.tma3_label.setObjectName("tma3_label")
+        self.vtag_10.addWidget(self.tma3_label)
+
+        # Layout for box 3
         self.verticalLayoutWidget_8 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_8.setGeometry(QtCore.QRect(340, 500, 121, 81))
+        self.verticalLayoutWidget_8.setGeometry(QtCore.QRect(500, 515, 121, 81))
         self.verticalLayoutWidget_8.setObjectName("verticalLayoutWidget_8")
         self.vdata3_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_8)
         self.vdata3_3.setContentsMargins(0, 0, 0, 0)
@@ -161,13 +191,10 @@ class ui_main_window(object):
         self.tma3.setText("")
         self.tma3.setObjectName("tma3")
         self.vdata3_3.addWidget(self.tma3)
-        self.line = QtWidgets.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(70, 70, 981, 20))
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
+
+        # Layout for label 4
         self.verticalLayoutWidget_9 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_9.setGeometry(QtCore.QRect(640, 500, 241, 81))
+        self.verticalLayoutWidget_9.setGeometry(QtCore.QRect(1150, 515, 241, 81))
         self.verticalLayoutWidget_9.setObjectName("verticalLayoutWidget_9")
         self.vtag_12 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_9)
         self.vtag_12.setContentsMargins(0, 0, 0, 0)
@@ -184,20 +211,10 @@ class ui_main_window(object):
         self.tma4_label.setFont(font)
         self.tma4_label.setObjectName("tma4_label")
         self.vtag_12.addWidget(self.tma4_label)
-        self.screen_title = QtWidgets.QLabel(self.centralwidget)
-        self.screen_title.setGeometry(QtCore.QRect(400, 40, 361, 42))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.screen_title.sizePolicy().hasHeightForWidth())
-        self.screen_title.setSizePolicy(sizePolicy)
-        self.screen_title.setBaseSize(QtCore.QSize(7, 0))
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        self.screen_title.setFont(font)
-        self.screen_title.setObjectName("screen_title")
+
+        # Layout for box 4
         self.verticalLayoutWidget_10 = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget_10.setGeometry(QtCore.QRect(880, 500, 121, 81))
+        self.verticalLayoutWidget_10.setGeometry(QtCore.QRect(1350, 515, 121, 81))
         self.verticalLayoutWidget_10.setObjectName("verticalLayoutWidget_10")
         self.vdata4_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_10)
         self.vdata4_3.setContentsMargins(0, 0, 0, 0)
@@ -212,36 +229,46 @@ class ui_main_window(object):
         self.tma4.setText("")
         self.tma4.setObjectName("tma4")
         self.vdata4_3.addWidget(self.tma4)
+
+        # Graph 1
+        self.graph_1 = QtWidgets.QLabel(self.centralwidget)
+        self.graph_1.setGeometry(QtCore.QRect(10, 170, 850, 350))
+        self.graph_1.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.graph_1.setText("")
+        self.graph_1.setObjectName("graph_1")
+
+        # Graph 2
+        self.graph_2 = QtWidgets.QLabel(self.centralwidget)
+        self.graph_2.setGeometry(QtCore.QRect(900, 170, 850, 350))
+        self.graph_2.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.graph_2.setText("")
+        self.graph_2.setObjectName("graph_2")
+
+        # Graph 3
+        self.graph_3 = QtWidgets.QLabel(self.centralwidget)
+        self.graph_3.setGeometry(QtCore.QRect(10, 590, 850, 350))
+        self.graph_3.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.graph_3.setText("")
+        self.graph_3.setObjectName("graph_3")
+
+        # Graph 4
         self.graph_4 = QtWidgets.QLabel(self.centralwidget)
-        self.graph_4.setGeometry(QtCore.QRect(640, 580, 361, 201))
+        self.graph_4.setGeometry(QtCore.QRect(900, 590, 850, 350))
         self.graph_4.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.graph_4.setText("")
         self.graph_4.setObjectName("graph_4")
-        self.muscle_h4 = QtWidgets.QLabel(self.centralwidget)
-        self.muscle_h4.setGeometry(QtCore.QRect(770, 480, 101, 16))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.muscle_h4.setFont(font)
-        self.muscle_h4.setObjectName("muscle_h4")
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1113, 26))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
+        # Add text to interface
         self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.compute_max_amplitude()
         self.compute_total_muscle_activity()
-        # self.show_graphs(self, MainWindow)
+        self.show_graphs()
 
     def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "StabiliKnee EMG Readings"))
         self.a1_label.setText(_translate("MainWindow", "Max Amplitude :"))
         self.tma1_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
         self.a3_label.setText(_translate("MainWindow", "Max Amplitude :"))
@@ -253,13 +280,16 @@ class ui_main_window(object):
         self.muscle_h3.setText(_translate("MainWindow", "Muscle #3"))
         self.a4_label.setText(_translate("MainWindow", "Max Amplitude :"))
         self.tma4_label.setText(_translate("MainWindow", "Total Muscle Activity :"))
-        self.screen_title.setText(_translate("MainWindow", "StabiliKnee EMG Reading"))
+        self.screen_title.setText(_translate("MainWindow", "StabiliKnee EMG Readings"))
         self.muscle_h4.setText(_translate("MainWindow", "Muscle #4"))
 
 
-    # Computes amplitudes for each muscle
+    # Computes max amplitudes for each muscle
     def compute_max_amplitude(self):
-        with open('arduino_data.csv', mode='r') as file:
+        """
+        Finds the maximum amplitude value for each muscle.
+        """
+        with open('data.csv', mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -301,10 +331,10 @@ class ui_main_window(object):
 
     def compute_total_muscle_activity(self):
         """
-    Calculates the integral of columns 1, 2, 3, and 4 over time (column 0).
-    If a column is missing, its value will be treated as 0.
-    """
-        with open('arduino_data.csv', mode='r') as file:
+        Calculates the integral of columns 1, 2, 3, and 4 over time (column 0).
+        If a column is missing, its value will be treated as 0.
+        """
+        with open('data.csv', mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -327,14 +357,18 @@ class ui_main_window(object):
                 for col in range(1, 5):
                     columns[col].append(row[col] if col < len(row) else 0.0)
 
-            # Calculate the integral for each column using the time data
+                # Convert time and column data to numpy arrays for compatibility with np.trapz
+            time = np.array(time)
             integrals = {}
+
+            # Calculate the integral for each column using the trapezoidal rule
             for col, values in columns.items():
                 if len(time) == len(values):  # Ensure the lengths match
-                    integrals[col] = simps(values, time)  # Use Simpson's rule for numerical integration
+                    integrals[col] = np.trapz(values, time)  # Use trapezoidal rule
                 else:
                     integrals[col] = 0.0  # Default to 0 if data is invalid
 
+            # Update the labels with the calculated integrals
             self.tma1.setText(f"{integrals[1]:.2f} mV")
             self.tma2.setText(f"{integrals[2]:.2f} mV")
             self.tma3.setText(f"{integrals[3]:.2f} mV")
@@ -345,3 +379,66 @@ class ui_main_window(object):
             self.tma2.setStyleSheet("font-size: 20px;")
             self.tma3.setStyleSheet("font-size: 20px;")
             self.tma4.setStyleSheet("font-size: 20px;")
+    def show_graphs(self):
+        """
+        Generates graphs for columns 1, 2, 3, and 4 using time (column 0) as the x-axis
+        and displays them on a QLabel. Missing columns are treated as 0.
+        """
+        with open('data.csv', mode='r') as file:
+            csvFile = csv.reader(file)
+            next(csvFile)  # Skip the first row (headers)
+
+            # Initialize time and sensor value columns
+            time = []
+            columns = {1: [], 2: [], 3: [], 4: []}
+
+            # Process the CSV file row by row
+            for row in csvFile:
+                # Convert values to floats, replace missing values with 0
+                row = [float(value) if value else 0.0 for value in row]
+
+                # Ensure the row has enough columns (fill missing with 0)
+                while len(row) < 5:
+                    row.append(0.0)
+
+                # Append the time and sensor values
+                time.append(row[0])
+                for col in range(1, 5):
+                    columns[col].append(row[col])
+
+            # Map QLabel widgets to columns
+            graph_labels = {
+                1: self.graph_1,
+                2: self.graph_2,
+                3: self.graph_3,
+                4: self.graph_4,
+            }
+
+            # Create individual graphs for each column
+            for col, values in columns.items():
+                fig, ax = plt.subplots()
+                ax.plot(time, values, label=f"Sensor {col}", marker="o")
+                ax.set_title(f"Sensor {col} Data Over Time")
+                ax.set_xlabel("Time (s)")
+                ax.set_ylabel("Sensor Values")
+                ax.legend()
+                ax.grid()
+
+                # Render the figure to a QPixmap
+                canvas = FigureCanvas(fig)
+                canvas.draw()
+
+                # Convert the rendered canvas to a QPixmap
+                buf = BytesIO()
+                canvas.print_png(buf)
+                buf.seek(0)
+                image = Image.open(buf)
+                qimage = QImage(image.tobytes(), image.size[0], image.size[1], QImage.Format_RGBA8888)
+                pixmap = QPixmap.fromImage(qimage)
+
+                # Set the graph to the corresponding QLabel
+                label = graph_labels.get(col)
+                if label:  # Ensure the QLabel exists
+                    label.setPixmap(pixmap)
+                    label.setScaledContents(True)
+                plt.close(fig)  # Clear figure to avoid overlapping plots
