@@ -289,7 +289,7 @@ class ui_main_window(object):
         """
         Finds the maximum amplitude value for each muscle.
         """
-        with open('data.csv', mode='r') as file:
+        with open('4sensor_readings.csv', mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -334,7 +334,7 @@ class ui_main_window(object):
         Calculates the integral of columns 1, 2, 3, and 4 over time (column 0).
         If a column is missing, its value will be treated as 0.
         """
-        with open('data.csv', mode='r') as file:
+        with open('4sensor_readings.csv', mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -351,7 +351,7 @@ class ui_main_window(object):
                     row.append(0.0)
 
                 # Extract the time value
-                time.append(row[0])
+                time.append(round(row[0], 3))
 
                 # Append values to corresponding columns, default to 0 if column is missing
                 for col in range(1, 5):
@@ -384,7 +384,7 @@ class ui_main_window(object):
         Generates graphs for columns 1, 2, 3, and 4 using time (column 0) as the x-axis
         and displays them on a QLabel. Missing columns are treated as 0.
         """
-        with open('data.csv', mode='r') as file:
+        with open('4sensor_readings.csv', mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -402,7 +402,7 @@ class ui_main_window(object):
                     row.append(0.0)
 
                 # Append the time and sensor values
-                time.append(row[0])
+                time.append(round(row[0], 3))
                 for col in range(1, 5):
                     columns[col].append(row[col])
 
