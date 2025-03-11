@@ -10,7 +10,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap, QImage
-from qtpy import QtCore
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -18,7 +17,11 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 
+
 class ui_main_window(object):
+    def __init__(self, csv_file):
+        self.csv_file = csv_file  # Store the file path
+
     def setup_ui(self, MainWindow):
         # Declares window size
         MainWindow.resize(1800, 950)
@@ -289,7 +292,7 @@ class ui_main_window(object):
         """
         Finds the maximum amplitude value for each muscle.
         """
-        with open('4sensor_readings.csv', mode='r') as file:
+        with open(self.csv_file, mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -334,7 +337,7 @@ class ui_main_window(object):
         Calculates the integral of columns 1, 2, 3, and 4 over time (column 0).
         If a column is missing, its value will be treated as 0.
         """
-        with open('4sensor_readings.csv', mode='r') as file:
+        with open(self.csv_file, mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
@@ -384,7 +387,7 @@ class ui_main_window(object):
         Generates graphs for columns 1, 2, 3, and 4 using time (column 0) as the x-axis
         and displays them on a QLabel. Missing columns are treated as 0.
         """
-        with open('4sensor_readings.csv', mode='r') as file:
+        with open(self.csv_file, mode='r') as file:
             csvFile = csv.reader(file)
             next(csvFile)  # Skip the first row (headers)
 
