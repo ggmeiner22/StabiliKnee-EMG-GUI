@@ -8,4 +8,5 @@ All .csv files should contain the format of and column headers of the following:
 
 Current interface visual:
 
-![image](https://github.com/user-attachments/assets/8479749b-542e-4d17-8472-ef046062a777)
+![image](https://github.com/user-attachments/assets/4fd6d4ed-b456-4cc5-a122-ff0a05906c03)
+
