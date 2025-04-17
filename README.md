@@ -29,7 +29,7 @@ pip install pyqt5 pyserial matplotlib numpy
 
 1. **Serial Port & Baud Rate**
    - Default port: `COM3` (Windows) or `/dev/ttyUSB0` (Linux/Mac).
-   - Default baud rate: `9600`.
+   - Default baud rate: `115200`.
    - To change, edit the instantiation in `main.py` or in `ui_main_window.py`:
      ```python
      from uMyoTest_2_25 import SerialReaderFromUMyo
