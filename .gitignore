@@ -1,1 +1,15 @@
+# Ignore all JetBrains/IntelliJ IDEA project files and folders
+.idea/
 __pycache__/
+
+# Ignore all .iml module files
+*.iml
+
+# Ignore IntelliJ XML configuration files in the project root
+misc.xml
+modules.xml
+vcs.xml
+
+# Other OS-specific or tool-specific files, you might add them too:
+.DS_Store
+Thumbs.db

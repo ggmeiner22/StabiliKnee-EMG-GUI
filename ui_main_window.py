@@ -5,10 +5,14 @@ Updated UI file for real-time Arduino data acquisition and display.
 Uses a QThread from uMyoTest_2_25.py to read serial data and write to a CSV file.
 A QTimer then updates the amplitude labels, muscle activity values, and graphs.
 """
-
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="Unable to import Axes3D.*",
+    module="matplotlib.projections"
+)
 import os
 import csv
-import time
 import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -17,6 +21,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from uMyoTest_2_25 import SerialReaderFromUMyo
+
+color_red = "\u001b[31m"
+color_magenta = "\u001b[35m"
+color_reset = "\u001b[0m"
 
 
 class ui_main_window(object):
@@ -265,8 +274,7 @@ class ui_main_window(object):
             with open(self.csv_file, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Timestamp', 'Muscle1', 'Muscle2', 'Muscle3', 'Muscle4'])
-            # Import and start the serial reader thread from uMyoTest_2_25.py.
-            from uMyoTest_2_25 import SerialReaderFromUMyo
+
             self.serial_thread = SerialReaderFromUMyo(self.csv_file, serial_port='COM3', baud_rate=9600, num_sensors=4)
             self.serial_thread.start()
             # Set up a timer to update UI elements (graphs and labels) every timer_interval ms.
@@ -337,7 +345,7 @@ class ui_main_window(object):
                 self.a4.setStyleSheet("font-size: 20px;")
             # (Add error handling or logging as needed)
         except Exception as e:
-            print("Error computing max amplitude:", e)
+            print(f"{color_magenta}Error computing max amplitude: {color_red}{e}{color_reset}")
 
     def compute_total_muscle_activity(self):
         """Compute total muscle activity (integral) per muscle from CSV data."""
@@ -372,7 +380,7 @@ class ui_main_window(object):
                 self.tma3.setStyleSheet("font-size: 20px;")
                 self.tma4.setStyleSheet("font-size: 20px;")
         except Exception as e:
-            print("Error computing total muscle activity:", e)
+            print(f"{color_magenta}Error computing total muscle activity: {color_red}{e}{color_reset}")
 
     def show_graphs(self):
         """Read CSV data and update the graphs displayed on QLabel widgets."""
@@ -395,7 +403,7 @@ class ui_main_window(object):
                 self.plot_graph(columns[3], time_vals, self.graph_3)
                 self.plot_graph(columns[4], time_vals, self.graph_4)
         except Exception as e:
-            print("Error displaying graphs:", e)
+            print(f"{color_magenta} displaying graphs: {color_red}{e}{color_reset}")
 
     def plot_graph(self, data, time_vals, graph_label):
         """Plot a matplotlib graph and set it as the pixmap of a QLabel."""
