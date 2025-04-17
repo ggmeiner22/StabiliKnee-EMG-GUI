@@ -22,7 +22,7 @@ This repository contains a PyQt5 application for real-time acquisition, logging,
 
 Install dependencies with:
 ```bash
-pip install pyqt5 pyserial matplotlib numpy
+$ pip install pyqt5 pyserial matplotlib numpy
 ```
 
 ## Configuration
@@ -61,7 +61,7 @@ pip install pyqt5 pyserial matplotlib numpy
 
 From the project root directory, simply run:
 ```bash
-python main.py
+$ python main.py
 ```
 
 - **Console output** will confirm:
@@ -76,16 +76,16 @@ python main.py
   - Check that the serial port name and baud rate match your device.
 - **Permission errors on serial port (Linux/Mac)**:
   ```bash
-  sudo usermod -a -G dialout $USER
+  $ sudo usermod -a -G dialout $USER
   ```
   or
   ```
-  sudo chmod 0700 /run/user/$(id -u)
+  $ sudo chmod 0700 /run/user/$(id -u)
   ```
   then log out/in.
 - **Missing Python packages**:
   ```bash
-  pip install pyqt5 pyserial matplotlib numpy
+  $ pip install pyqt5 pyserial matplotlib numpy
   ```
 
 ## Current interface visual
