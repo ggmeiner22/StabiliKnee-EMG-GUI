@@ -27,7 +27,7 @@ def get_new_filename(subject="A0"):
 class SerialReaderFromUMyo(QThread):
     data_received = pyqtSignal()
 
-    def __init__(self, csv_file, serial_port="COM3", baud_rate=9600, num_sensors=4, parent=None):
+    def __init__(self, csv_file, serial_port="COM3", baud_rate=115200, num_sensors=4, parent=None):
         super(SerialReaderFromUMyo, self).__init__(parent)
         self.csv_file = csv_file
         self.serial_port = serial_port

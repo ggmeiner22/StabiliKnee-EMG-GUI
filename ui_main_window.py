@@ -275,7 +275,7 @@ class ui_main_window(object):
                 writer = csv.writer(file)
                 writer.writerow(['Timestamp', 'Muscle1', 'Muscle2', 'Muscle3', 'Muscle4'])
 
-            self.serial_thread = SerialReaderFromUMyo(self.csv_file, serial_port='COM3', baud_rate=9600, num_sensors=4)
+            self.serial_thread = SerialReaderFromUMyo(self.csv_file, serial_port='COM3', baud_rate=115200, num_sensors=4)
             self.serial_thread.start()
             # Set up a timer to update UI elements (graphs and labels) every timer_interval ms.
             self.timer = QTimer()
