@@ -88,13 +88,6 @@ python main.py
   pip install pyqt5 pyserial matplotlib numpy
   ```
 
-## Contribution
-
-Feel free to open issues or pull requests to:
-- Add new metrics or visualizations.
-- Enhance UI layout or styling.
-- Support variable sensor counts.
-
 ---
 
 *Enjoy real-time EMG visualization!*
