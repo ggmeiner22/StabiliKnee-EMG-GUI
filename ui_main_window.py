@@ -1,10 +1,3 @@
-# ui_main_window.py
-# -*- coding: utf-8 -*-
-"""
-Updated UI file for real-time Arduino data acquisition and display.
-Uses a QThread from uMyoTest_2_25.py to read serial data and write to a CSV file.
-A QTimer then updates the amplitude labels, muscle activity values, and graphs.
-"""
 import warnings
 warnings.filterwarnings(
     "ignore",
@@ -269,20 +262,19 @@ class ui_main_window(object):
         self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        # Initialize CSV file and start sensor acquisition if no existing data is present.
         if not self.is_existing_data:
             with open(self.csv_file, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Timestamp', 'Muscle1', 'Muscle2', 'Muscle3', 'Muscle4'])
-
-            self.serial_thread = SerialReaderFromUMyo(self.csv_file, serial_port='COM3', baud_rate=115200, num_sensors=4)
-            self.serial_thread.start()
-            # Set up a timer to update UI elements (graphs and labels) every timer_interval ms.
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_data)
-            self.timer.start(self.timer_interval)
-        else:
-            self.process_existing_data()
+        self.process_existing_data()
+        self.serial_thread = SerialReaderFromUMyo(
+            self.csv_file,
+            serial_port='COM3',  # update as needed
+            baud_rate=115200,
+            num_sensors=4
+        )
+        self.serial_thread.data_received.connect(self.update_data)
+        self.serial_thread.start()
 
     def retranslate_ui(self, MainWindow):
 
@@ -303,9 +295,19 @@ class ui_main_window(object):
         self.muscle_h4.setText(_translate("MainWindow", "Muscle #4"))
         # (Add other translations as needed)
 
-
     def update_data(self):
-        """Called by QTimer to update amplitude labels, muscle activity, and graphs."""
+        # open once and count rows
+        with open(self.csv_file) as f:
+            rows = sum(1 for _ in f)
+        # if only header, still run compute/show so you get zeros
+        if rows <= 1:
+            # optional: explicitly zero out labels/graphs
+            self.compute_max_amplitude()
+            self.compute_total_muscle_activity()
+            self.show_graphs()
+            return
+
+        # otherwise run normally
         self.compute_max_amplitude()
         self.compute_total_muscle_activity()
         self.show_graphs()

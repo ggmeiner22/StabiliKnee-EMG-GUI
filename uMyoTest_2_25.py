@@ -27,55 +27,66 @@ def get_new_filename(subject="A0"):
 class SerialReaderFromUMyo(QThread):
     data_received = pyqtSignal()
 
-    def __init__(self, csv_file, serial_port="COM3", baud_rate=115200, num_sensors=4, parent=None):
-        super(SerialReaderFromUMyo, self).__init__(parent)
+    def __init__(self, csv_file, serial_port, baud_rate, num_sensors, parent=None):
+        super().__init__(parent)
         self.csv_file = csv_file
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.num_sensors = num_sensors
-        self._running = True
+        self._running = False
         self.ser = None
+        self.start_time = None
 
     def run(self):
-        # Ensure the CSV file has a header if it does not already exist
-        if not os.path.exists(self.csv_file):
-            with open(self.csv_file, 'w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['Timestamp'] + [f"Muscle{i}" for i in range(1, self.num_sensors + 1)])
-
-        # Attempt to open the serial port
+        # Open serial port
         try:
-            self.ser = serial.Serial(self.serial_port, self.baud_rate, timeout=1)
-            print(f"{color_magenta}Connected to serial port: {color_red}{self.serial_port}{color_magenta} at "
-                  f"{color_red}{self.baud_rate}{color_magenta} baud.{color_reset}")
+            self.ser = serial.Serial(self.serial_port, self.baud_rate, timeout=0.1)
+            time.sleep(2)
         except Exception as e:
-            print(f"{color_magenta}Failed to connect to serial port: {color_red}{e}{color_reset}")
+            print(f"SerialReader: could not open port {self.serial_port}: {e}")
             return
 
-        # Continuously read incoming data until stopped
+        # Open CSV file for appending
+        try:
+            csvfile = open(self.csv_file, 'a', newline='')
+            writer = csv.writer(csvfile)
+        except Exception as e:
+            print(f"SerialReader: could not open CSV file {self.csv_file}: {e}")
+            if self.ser.is_open:
+                self.ser.close()
+            return
+
+        self._running = True
+        self.start_time = time.time()
+        buffer = ""
         while self._running:
             try:
                 if self.ser.in_waiting:
-                    raw_line = self.ser.readline().decode('utf-8').strip()
-                    if raw_line:
-                        # Expect space-separated sensor values
-                        sensor_values = raw_line.split()
-                        if len(sensor_values) == self.num_sensors:
-                            sensor_values = list(map(float, sensor_values))
-                            timestamp = time.time()
-                            # Append the new data row to the CSV file
-                            with open(self.csv_file, 'a', newline='') as file:
-                                writer = csv.writer(file)
-                                writer.writerow([timestamp] + sensor_values)
-                                file.flush()
-                            # Emit signal to notify UI of new data
+                    data = self.ser.read(self.ser.in_waiting).decode('utf-8', errors='ignore')
+                    buffer += data
+                    while '\n' in buffer:
+                        line, buffer = buffer.split('\n', 1)
+                        parts = line.strip().split()
+                        if len(parts) == self.num_sensors:
+                            try:
+                                values = [float(p) for p in parts]
+                            except ValueError:
+                                continue
+                            elapsed = round(time.time() - self.start_time, 3)
+                            # Write to CSV and flush
+                            writer.writerow([elapsed] + values)
+                            csvfile.flush()
+                            # Notify UI to update
                             self.data_received.emit()
             except Exception as e:
-                print(f"{color_magenta}Error reading from serial: {color_red}{e}{color_reset}")
+                print(f"SerialReader error: {e}")
+            time.sleep(0.03)
 
-        # Clean up serial connection on exit
-        if self.ser:
+        # Clean up
+        csvfile.close()
+        if self.ser and self.ser.is_open:
             self.ser.close()
 
     def stop(self):
         self._running = False
+        self.wait()
