@@ -49,6 +49,8 @@ A PyQt5-based desktop application to visualize real-time EMG data streamed from 
 3. Compile & upload to your board (e.g. Arduino Nano 33 BLE).  
 4. Plug in the board; note the COM/tty port (e.g. `COM3` or `/dev/cu.usbmodem…`).
 
+---
+
 ## Python Application Usage
 
 1. Edit `main.py` to set:
