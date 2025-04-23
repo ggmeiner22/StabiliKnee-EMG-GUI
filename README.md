@@ -1,60 +1,79 @@
-# StabiliKnee EMG Data Viewer
+# StabiliKnee EMG GUI
 
-This repository contains a PyQt5 application for real-time acquisition, logging, and visualization of electromyography (EMG) sensor data from an Arduino.
+A PyQt5-based desktop application to visualize real-time EMG data streamed from an Arduino (using the uMyo BLE library). Data are logged to CSV and displayed as four muscle-activity graphs along with max amplitudes and total activity metrics.
+
+---
 
 ## Features
 
-- **Real-time data acquisition**: Background thread reads space-separated sensor values over serial.
-- **CSV logging**: Automatic recording to `TestSubject_<ID>.csv` with header `Timestamp,Muscle1,Muscle2,Muscle3,Muscle4`.
-- **Live metrics**: Computes and displays maximum amplitude and total muscle activity (integral) for each muscle.
-- **Dynamic plotting**: Embedded matplotlib graphs in QLabel widgets, refreshing every second.
-- **Clean shutdown**: Properly stops serial thread and closes file handles on exit.
+- **Real-time plotting** of up to 4 EMG channels  
+- **Max Amplitude** and **Total Muscle Activity** (integral) computed live  
+- **CSV logging** for offline analysis  
+- **Muscle group selection** (Quad vs Hamstring) at startup  
+- **Clean shutdown** of serial reader thread  
 
-## Prerequisites
+---
 
-- **Python**: 3.7 or higher
-- **Arduino**: Device sending four space-separated values per line (e.g., `102 345 567 234`).
-- **Python packages**:
-  - PyQt5
-  - pyserial
-  - matplotlib
-  - numpy
+## Requirements
 
-Install dependencies with:
-```bash
-$ pip install pyqt5 pyserial matplotlib numpy
-```
+- Python 3.7+  
+- PyQt5  
+- pyserial  
+- numpy  
+- matplotlib  
+- Arduino IDE (to upload the `.ino` sketch)  
 
-## Configuration
+---
 
-1. **Serial Port & Baud Rate**
-   - Default port: `COM3` (Windows) or `/dev/ttyUSB0` (Linux/Mac).
-   - Default baud rate: `115200`.
-   - To change, edit the instantiation in `main.py` or in `ui_main_window.py`:
-     ```python
-     from uMyoTest_2_25 import SerialReaderFromUMyo
-     self.serial_thread = SerialReaderFromUMyo(
-         csv_file, serial_port="<YOUR_PORT>", baud_rate=<YOUR_BAUD>
-     )
-     ```
+## Installation
 
-2. **Subject ID & CSV Filename**
-   - Default subject ID: `A00_Test123`.
-   - CSV filename is generated via `get_new_filename(subject)` as `TestSubject_<subject>.csv`.
-   - To override, change the `subject` variable in `main.py`:
-     ```python
-     from uMyoTest_2_25 import get_new_filename
-     subject = "MySubject"
-     csv_file = get_new_filename(subject)
-     ```
+1. Clone this repo:
+   ```bash
+   git clone https://your.repo.url/StabiliKnee-EMG-GUI.git
+   cd StabiliKnee-EMG-GUI
+2. Create a Python virtual environment (optional but recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate   # Linux/macOS
+   venv\Scripts\activate      # Windows
+3. Install Python dependencies:
+   ```bash
+   pip install PyQt5 pyserial numpy matplotlib
+   
+---
+
+## Arduino Setup
+
+1. Open `green_red_EMG_button.ino` in the Arduino IDE.  
+2. Verify that `Serial.begin(115200);` is set.  
+3. Compile & upload to your board (e.g. Arduino Nano 33 BLE).  
+4. Plug in the board; note the COM/tty port (e.g. `COM3` or `/dev/cu.usbmodem…`).
+
+## Python Application Usage
+
+1. Edit `main.py` to set:
+   ```python
+   subject = "A00_Test123"
+   port    = 'COM3'        # or '/dev/ttyUSB0'
+   baud    = 115200
+   sensors = 4
+2. Run the app:
+   ```bash
+   python main.py
+3. On launch, select Quad or Hamstring muscle grouping.
+4. Watch live graphs, max amplitudes, and total activity update as EMG data arrive.
+
+---
 
 ## File Structure
 
 ```
-├── main.py            # Entry point: sets up QApplication and MainWindow
-├── main_window.py     # QMainWindow wrapper loading the UI
-├── ui_main_window.py  # UI layout and update logic (labels, graphs, timers)
-└── uMyoTest_2_25.py   # SerialReaderFromUMyo thread and CSV header helper
+StabiliKnee-EMG-GUI/
+├── green_red_EMG_button.ino    # Arduino sketch for EMG + LED/button
+├── main.py                     # Application entry point
+├── main_window.py              # QMainWindow wrapper
+├── ui_main_window.py           # PyQt5 UI layout & logic
+└── uMyo_serial_thread.py       # QThread to read serial, log CSV, emit data
 ```
 
 ## Running the Application
