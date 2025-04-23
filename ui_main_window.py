@@ -1,4 +1,7 @@
 import warnings
+
+from PyQt5.QtWidgets import QInputDialog, QMessageBox
+
 warnings.filterwarnings(
     "ignore",
     message="Unable to import Axes3D.*",
@@ -9,12 +12,11 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 from io import BytesIO
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from uMyoTest_2_25 import SerialReaderFromUMyo
+from uMyo_serial_thread import SerialReaderFromUMyo
 
 color_red = "\u001b[31m"
 color_magenta = "\u001b[35m"
@@ -22,16 +24,24 @@ color_reset = "\u001b[0m"
 
 
 class ui_main_window(object):
-    def __init__(self, csv_file):
-        self.csv_file = csv_file  # CSV file path
-        self.timer_interval = 1000  # UI update interval (ms)
-        self.timer = None
+    def __init__(self, csv_file, serial_port, baud_rate, num_sensors):
+        self.csv_file = csv_file
+        self.serial_port = serial_port
+        self.baud_rate = baud_rate
+        self.num_sensors = num_sensors
+        self.timer_interval = 1000
         self.serial_thread = None
-
-        # Check if the CSV file exists and has content
+        self.timer = None
         self.is_existing_data = os.path.exists(csv_file) and os.path.getsize(csv_file) > 0
 
     def setup_ui(self, MainWindow):
+        # Keep a reference to the parent widget
+        self.main_window = MainWindow
+
+        # Ask user for muscle group type (Quad or Hamstring)
+        muscle_group = self.ask_for_muscle_group(self.main_window)
+        self.muscle_group_labels = self.get_muscle_labels(muscle_group)
+
         # Set window dimensions
         MainWindow.resize(1800, 950)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -262,19 +272,58 @@ class ui_main_window(object):
         self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        # Initialize CSV on first run
         if not self.is_existing_data:
-            with open(self.csv_file, 'w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(['Timestamp', 'Muscle1', 'Muscle2', 'Muscle3', 'Muscle4'])
+            with open(self.csv_file, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(
+                    ['Timestamp'] +
+                    [f"Muscle{i + 1} - {self.muscle_group_labels[i]}" for i in range(self.num_sensors)]
+                )
         self.process_existing_data()
+
+        # Start serial reader thread
         self.serial_thread = SerialReaderFromUMyo(
             self.csv_file,
-            serial_port='COM3',  # update as needed
-            baud_rate=115200,
-            num_sensors=4
+            self.serial_port,
+            self.baud_rate,
+            self.num_sensors
         )
-        self.serial_thread.data_received.connect(self.update_data)
+        self.serial_thread.data_received.connect(self.on_new_data)
         self.serial_thread.start()
+
+    def on_new_data(self, elapsed, values):
+        # New sample arrived; refresh UI
+        self.update_data()
+
+    def ask_for_muscle_group(self, parent):
+        # Use the actual MainWindow as parent for dialogs
+        options = ["Quad", "Hamstring"]
+        choice, ok = QInputDialog.getItem(
+            parent,
+            "Select Muscle Group",
+            "Choose muscle group:",
+            options,
+            0,
+            False
+        )
+        if ok and choice:
+            return choice
+        else:
+            QMessageBox.warning(
+                parent,
+                "Error",
+                "No muscle group selected. Defaulting to Quad."
+            )
+            return "Quad"
+
+    def get_muscle_labels(self, muscle_group):
+        if muscle_group == "Quad":
+            return ["RVL", "RVM", "LVM", "LVL"]
+        elif muscle_group == "Hamstring":
+            return ["RBF", "RST", "LST", "LBF"]
+        else:
+            return ["RVL", "RVM", "LVM", "LVL"]
 
     def retranslate_ui(self, MainWindow):
 
@@ -423,9 +472,14 @@ class ui_main_window(object):
         plt.close(fig)
 
     def cleanup(self):
-        """Stop the timer and serial thread during application exit."""
+        """Stop timer (if any) and serial thread during exit."""
         if self.timer is not None:
             self.timer.stop()
+
         if self.serial_thread is not None:
-            self.serial_thread.stop()
-            self.serial_thread.wait()
+            try:
+                # Stops the thread loop; don't call wait() here or the C++ object may already be gone
+                self.serial_thread.stop()
+            except RuntimeError:
+                # If the thread object has already been deleted, just ignore
+                pass
