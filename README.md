@@ -75,19 +75,7 @@ StabiliKnee-EMG-GUI/
 ├── ui_main_window.py           # PyQt5 UI layout & logic
 └── uMyo_serial_thread.py       # QThread to read serial, log CSV, emit data
 ```
-
-## Running the Application
-
-From the project root directory, simply run:
-```bash
-$ python main.py
-```
-
-- **Console output** will confirm:
-  - The CSV file in use (e.g., `TestSubject_A00_Test123.csv`).
-  - Serial port connection status.
-- **GUI window** will launch and begin updating metrics and plots in real time.
-
+---
 ## Troubleshooting
 
 - **No GUI data updates**:
@@ -106,7 +94,7 @@ $ python main.py
   ```bash
   $ pip install pyqt5 pyserial matplotlib numpy
   ```
-
+---
 ## Current interface visual
 
 ![image](https://github.com/user-attachments/assets/4fd6d4ed-b456-4cc5-a122-ff0a05906c03)
