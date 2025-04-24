@@ -61,7 +61,7 @@ A PyQt5-based desktop application to visualize real-time EMG data streamed from 
    sensors = 4
 2. Run the app:
    ```bash
-   python main.py
+   python3 main.py
 3. On launch, select Quad or Hamstring muscle grouping.
 4. Watch live graphs, max amplitudes, and total activity update as EMG data arrive.
 
