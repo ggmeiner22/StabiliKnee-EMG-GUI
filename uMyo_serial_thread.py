@@ -7,6 +7,7 @@ color_red = "\u001b[31m"
 color_magenta = "\u001b[35m"
 color_reset = "\u001b[0m"
 
+
 def get_new_filename(subject="A0"):
     """Generate a new CSV filename based on subject ID."""
     return f"TestSubject_{subject}.csv"

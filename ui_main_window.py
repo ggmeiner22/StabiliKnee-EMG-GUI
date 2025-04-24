@@ -386,10 +386,10 @@ class ui_main_window(object):
                     if max_values[col] == float('-inf'):
                         max_values[col] = 0
                 # Update amplitude labels
-                self.a1.setText(f"{max_values[1]:.2f} mV")
-                self.a2.setText(f"{max_values[2]:.2f} mV")
-                self.a3.setText(f"{max_values[3]:.2f} mV")
-                self.a4.setText(f"{max_values[4]:.2f} mV")
+                self.a1.setText(f"{max_values[1]:.2f} V")
+                self.a2.setText(f"{max_values[2]:.2f} V")
+                self.a3.setText(f"{max_values[3]:.2f} V")
+                self.a4.setText(f"{max_values[4]:.2f} V")
                 self.a1.setStyleSheet("font-size: 20px;")
                 self.a2.setStyleSheet("font-size: 20px;")
                 self.a3.setStyleSheet("font-size: 20px;")
