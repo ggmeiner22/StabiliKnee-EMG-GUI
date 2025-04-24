@@ -422,10 +422,10 @@ class ui_main_window(object):
                     else:
                         integrals[col] = 0.0
                 # Update total muscle activity labels
-                self.tma1.setText(f"{integrals[1]:.2f} mV")
-                self.tma2.setText(f"{integrals[2]:.2f} mV")
-                self.tma3.setText(f"{integrals[3]:.2f} mV")
-                self.tma4.setText(f"{integrals[4]:.2f} mV")
+                self.tma1.setText(f"{integrals[1]:.2f} V")
+                self.tma2.setText(f"{integrals[2]:.2f} V")
+                self.tma3.setText(f"{integrals[3]:.2f} V")
+                self.tma4.setText(f"{integrals[4]:.2f} V")
                 self.tma1.setStyleSheet("font-size: 20px;")
                 self.tma2.setStyleSheet("font-size: 20px;")
                 self.tma3.setStyleSheet("font-size: 20px;")
